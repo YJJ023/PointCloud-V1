@@ -1,10 +1,12 @@
 import React, { useContext} from "react";
 import { CountContext } from "../App";
 import * as THREE from 'three'
-//import { forwardRef } from "react";
 import './data.css'
-export default function Data(props){
+
+function Data(props){
+// eslint-disable-next-line no-unused-vars
 const PointList=useContext(CountContext);
+
 return(<>
 <ul className="rend">{  
 
@@ -13,6 +15,8 @@ PointList.map((item,index)=>
 <li className="myli" key={index}>
 <div className="right1" >Point Id:{index+1}<button className="right" onClick={
 ()=>{
+/*     console.log(item);
+dispatch(DeletePoint(index)) */
 PointList.splice(index,1);//移除标记点数组的数据
 //delete PointList[index];
 props.scene.remove(props.list[index]);//移除标记点
@@ -25,7 +29,7 @@ delete props.line[props.line.length-1-index*3]; */
 //且删除掉数组中的元素后，会把该下标出的值置为undefined，数组的长度不会变。
 props.linemodel.geometry.attributes.position=new THREE.BufferAttribute(new Float32Array(props.line),3);
 props.scene.add(props.linemodel)
-props.uprender(n=>n+1);
+props.uprender(n=>n+1);//delete后重新渲染app组件
 document.getElementById('remove').style.visibility="hidden";
 }}>清除此点</button></div>
 <div>x:{item.x}</div>
@@ -36,4 +40,4 @@ document.getElementById('remove').style.visibility="hidden";
 </>
 );
 }
-
+export default  Data

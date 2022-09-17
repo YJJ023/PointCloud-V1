@@ -9,7 +9,7 @@ height: 600px;
 
 
 .rend::-webkit-scrollbar {
-    width: 0;
+    width: 10px;
   }
 
 .myli{
@@ -17,7 +17,7 @@ height: 600px;
    /*  height: 76.4px; */
     padding-left: 4px;
 border: 2px solid;
-border-color: brown;
+/* border-color: brown; */
 }
 
 .right{

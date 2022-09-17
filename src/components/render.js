@@ -4,16 +4,19 @@ import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 // eslint-disable-next-line no-unused-vars
-import { useState,useLayoutEffect,forwardRef, useImperativeHandle, useContext, useMemo, useRef} from 'react';
+import { useLayoutEffect,forwardRef, useImperativeHandle, useContext, useMemo, useRef} from 'react';
 // eslint-disable-next-line no-unused-vars
 import { memo } from 'react';
 import { CountContext } from '../App';
 import './render.css';
+import { useDispatch } from 'react-redux';
+import { ReNew } from '../store/slices/SetPointSlice';
+
 
 
 const Render= forwardRef((props,ref)=>{
-  // eslint-disable-next-line no-unused-vars
-  let [a,seta]=useState(1);
+ /* const test=useSelector((state)=>state.SetPoint); */
+  const dispatch=useDispatch();
 let max_x = -Infinity;//小地图用
 let max_y = -Infinity;//小地图用
 let min_x = Infinity;//小地图用
@@ -282,7 +285,7 @@ useLayoutEffect(()=>{
 },[])
   
    useImperativeHandle(ref,()=>{//传输数据给APP组件
-    return {a:spheres.current[0].position,
+    return {/* a:spheres.current[0].position, */
             b:RecordPointList.current,
             c:scene.current,
             d:varlog.current
@@ -292,7 +295,8 @@ useLayoutEffect(()=>{
    //这个监听器不用每次渲染删除，虽然每次渲染都会生成新的监听器，
    //但经测验，如果这些监听器返回值完全相同，也只会执行一次
   document.addEventListener("mousedown", (event) => {
-    props.uprender(n=>n+1)//让父组件重新渲染，自己不渲染
+    //dispatch({'PointLocation',{spheres.current[0]}})
+    //props.uprender(n=>n+1)//让父组件重新渲染，自己不渲染
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(pointer, camera.current);
@@ -301,29 +305,16 @@ useLayoutEffect(()=>{
     if (intersects !== null) {
       spheres.current[0].position.copy(intersects.point);
      spheres.current[0].scale.set(1, 1, 1);
+     dispatch(ReNew(spheres.current[0].position));
     };
   });
   //鼠标点击显示点模型信息
-window.addEventListener('mousedown',()=>{
-  let sum=0;
-varlog.current.map((item,index)=>{
-sum=sum+item;//item是没点击到的点加一
-  return 0;
-})
-if(sum===varlog.current.length-1){//全部没点击到
-  document.getElementById('remove').style.visibility="hidden";
-}})
 
-useMemo(()=>{ console.log(a);
-  seta(2);
-  console.log(a);},[1])
+
 window.addEventListener('mousedown',(event)=>{
-  console.log(a);
-  seta(a++);
-  console.log(a);
-  props.uprender(n=>n+1);
+
 RecordPointList.current.map((item,index)=>{
- 
+ //监测范围内是否有点，如果有则显示divID
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster1.setFromCamera(mouse, camera.current);
@@ -335,18 +326,33 @@ if(
   item.position.x+0.6>=intersects1.point.x&&
   item.position.y-0.6<=intersects1.point.y&&
   item.position.y+0.6>=intersects1.point.y){
-  varlog.current[index+1]=0;
-document.getElementById('remove').style.visibility="visible"
+    varlog.current[index]=0;
+ //0意为点击到了球模型
+document.getElementById('remove').style.visibility='visible';
 document.getElementById('remove').style.left=event.clientX+2+'px';
 document.getElementById('remove').style.top=event.clientY+2+'px';
 document.getElementById('remove').innerHTML="id:"+ (index+1);
+props.uprender(n=>n+1);//if判断要显示div了才渲染
+//要渲染父组件且不能渲染本组件，
+//不然每次渲染都会生成addeventlistener,每次点击都会有十几个addeventlistener，
+//后面的listener(hidden)会覆盖前面的listenner(visible)的值
 }else{
-  varlog.current[index+1]=1;//每点击到的点加一，如果所有都没点击到div就hidden
+  varlog.current[index]=1;
+//每点击到的点加一，如果所有都没点击到div就hidden
 }
 return 0;
 })})
 
-
+window.addEventListener('mousedown',()=>{
+  let sum=0;
+varlog.current.map((item,index)=>{
+sum=sum+item;//item是没点击到的点加一
+  return 0;
+})
+if(sum===varlog.current.length){//全部没点击到
+  document.getElementById('remove').style.visibility="hidden";
+  /* props.uprender(n=>n+1) */
+}})
 
 return (<>
 <ul className='ulul'>
@@ -355,7 +361,7 @@ return (<>
   camera.current.position.set(0, 0, 50);
   camera.current.lookAt(0,0,0);
   cameraOrtho.current.zoom=1;
-}}>锁定俯视{console.log(a)}</button>
+}}>锁定俯视</button>
 </li>
   <li>
     <button onClick={()=>{
@@ -456,28 +462,34 @@ if(mark3===1){
      if(camera.current.position.z>=10000){
      camera.current.position.z=50;
      
-     document.getElementsByTagName("button")[1].disabled=false;//开启锁定俯视
-     document.getElementsByTagName("button")[2].disabled=false;//禁用锁定俯视
+     // document.getElementsByTagName("button")[1].disabled=false;//开启锁定俯视
+     //document.getElementsByTagName("button")[2].disabled=false;//禁用锁定俯视
      document.getElementsByTagName("button")[3].disabled=false;//禁用锁定俯视
      document.getElementsByTagName("button")[4].disabled=false;
      document.getElementsByTagName("button")[5].disabled=false;
+     document.getElementsByTagName("button")[6].disabled=false;
+     document.getElementsByTagName("button")[7].disabled=false;
      document.getElementsByTagName('input')[0].disabled=false;
      document.getElementsByTagName('input')[2].disabled=false;
      document.getElementsByTagName('input')[3].disabled=false;
-    
+     document.getElementsByTagName('input')[4].disabled=false;
+     document.getElementsByTagName('input')[5].disabled=false;
       }else{
      renderer.current.autoClear = true;
      camera.current.position.z=1000000;
      
-     document.getElementsByTagName("button")[1].disabled=true;//禁用锁定俯视
-     document.getElementsByTagName("button")[2].disabled=true;
+     //document.getElementsByTagName("button")[1].disabled=true;//禁用锁定俯视
+     //document.getElementsByTagName("button")[2].disabled=true;
      document.getElementsByTagName("button")[3].disabled=true;
      document.getElementsByTagName("button")[4].disabled=true;
      document.getElementsByTagName("button")[5].disabled=true;
+     document.getElementsByTagName("button")[6].disabled=true;
+     document.getElementsByTagName("button")[7].disabled=true;
      document.getElementsByTagName('input')[0].disabled=true;
     document.getElementsByTagName('input')[2].disabled=true;
     document.getElementsByTagName('input')[3].disabled=true;
-     
+    document.getElementsByTagName('input')[4].disabled=true;
+    document.getElementsByTagName('input')[5].disabled=true;
     
   }
 }}></label>

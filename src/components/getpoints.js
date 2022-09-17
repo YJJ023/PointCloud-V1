@@ -2,10 +2,32 @@
 import './getpoints.css'
 import * as THREE from 'three'
 import React, { useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import { getData ,delpoints} from '../store/slices/GetPointSlice';
 
 function Getpoints(props){
 const carpoints=useRef([]);//新的点模型对象数组
-async function postdata(){
+const dispatch=useDispatch();
+const newdata=useSelector((state)=>state.GetPoint.rendpoints);
+  newdata.forEach((item,index)=>{
+    const sphereGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff3344,opacity:0.8,transparent:true});
+    let  pointsphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    pointsphere.position.x=item.x;
+    pointsphere.position.y=item.y;
+    pointsphere.position.z=item.z;
+    carpoints.current.unshift(pointsphere);
+    console.log(carpoints)
+    props.scene.add(pointsphere);
+    });
+
+ function postdata(){
+ dispatch(getData(props.pointlist));//渲染
+ console.log(newdata)
+
+}
+
+/* async function postdata(){
 const data=await fetch(
 'http://localhost:8002/api/setPoint',{
  method:'POST',
@@ -26,13 +48,18 @@ newpoints.data.points.forEach((item,index)=>{
     props.scene.add(pointsphere);
     });
     props.uprender(n=>n+1);//让app组件渲染
-}
+} */
 function deletedata(){
 carpoints.current.forEach((item,index)=>{
 props.scene.remove(item);
 })
+/* newdata.forEach((item,index)=>{
+  console.log(carpoints.current[index])
+  props.scene.remove(carpoints.current[index])
+}); */
 carpoints.current.length=0;
-props.uprender(n=>n+1);//让app组件渲染
+dispatch(delpoints())
+//props.uprender(n=>n+1);//让app组件渲染
 }
 
 
